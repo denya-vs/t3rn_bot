@@ -16,8 +16,6 @@ function askQuestion(query: string): Promise<string> {
 
 (async () => {
     displayHeader();
-    Logger.info('Welcome to the t3rn bot!');
-    Logger.info('For support or updates, join our Telegram channel: https://t.me/CryproFalconChannel');
 
     const privateKeys = JSON.parse(fs.readFileSync('privateKeys.json', 'utf-8'));
     const walletProvider = new WalletProvider();
@@ -38,6 +36,7 @@ function askQuestion(query: string): Promise<string> {
         const balance = await walletProvider.getBalance(wallet);
 
         Logger.info(`Wallet balance for ${wallet.address}: ${balance} ETH`);
+        console.log('');
 
         if (parseFloat(balance) < 0.001) {
             Logger.error('Insufficient balance. Skipping this wallet.');
@@ -51,5 +50,6 @@ function askQuestion(query: string): Promise<string> {
     }
 
     Logger.success('All transactions complete!');
+    console.log('');
     rl.close();
 })();

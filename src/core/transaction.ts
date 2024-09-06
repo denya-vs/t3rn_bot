@@ -51,6 +51,7 @@ export class TransactionManager {
                 Logger.success(`[ ${txEndTime.toLocaleTimeString()} ] Transaction successful from Arbitrum Sepolia to ${NetworkManager.getNetworkName(this.networkOption)} Sepolia!`);
                 Logger.info(`[ ${txEndTime.toLocaleTimeString()} ] Transaction hash: https://sepolia-explorer.arbitrum.io/tx/${result.hash}`);
                 Logger.info(`[ ${txEndTime.toLocaleTimeString()} ] Transaction took ${txEndTime.getTime() - txStartTime.getTime()} ms`);
+                console.log('');
 
                 successfulTx++;
                 remainingTx--;
@@ -68,6 +69,7 @@ export class TransactionManager {
         const endTime = new Date();
         Logger.info(`[ ${endTime.toLocaleTimeString()} ] Completed processing transactions`);
         Logger.info(`[ ${endTime.toLocaleTimeString()} ] Total time taken: ${endTime.getTime() - startTime.getTime()} ms`);
+        console.log('');
 
         return successfulTx;
     }

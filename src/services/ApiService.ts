@@ -35,7 +35,7 @@ export class ApiService {
                 spreadOptionPercentage: 0,
             });
 
-            return data.estimatedReceivedAmountWei;
+            return data.estimatedReceivedAmountWei.hex;
         } catch (error) {
             console.error(`Error in Get Amount: ${error}`);
             return null;
