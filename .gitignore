@@ -1,0 +1,27 @@
+/privateKeys.json
+
+# Node.js dependencies
+node_modules/
+
+# TypeScript build artifacts
+dist/
+build/
+
+# Environment files
+.env
+
+# Log files
+*.log
+
+# Operating system files
+.DS_Store
+Thumbs.db
+
+# IDE/editor specific files
+.vscode/
+.idea/
+
+# Mac-specific
+*.swp
+
+package-lock.json
