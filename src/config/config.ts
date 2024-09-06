@@ -8,5 +8,6 @@ export const CONFIG = {
     MIN_DELAY_MS: 10000,
     MAX_DELAY_MS: 60000,
     RPC_URL: "https://arbitrum-sepolia.blockpi.network/v1/rpc/public",
-    CONTRACT_ADDRESS: "0x8D86c3573928CE125f9b2df59918c383aa2B514D"
+    CONTRACT_ADDRESS: "0x8D86c3573928CE125f9b2df59918c383aa2B514D",
+    API_URL: "https://pricer.t1rn.io/estimate"
 };
