@@ -18,12 +18,15 @@ export class TransactionManager {
 
     async executeTransaction(remainingTx: number): Promise<number> {
         let successfulTx = 0;
+        const startTime = new Date();
+
+        Logger.info(`[ ${startTime.toLocaleTimeString()} ] Started processing transactions`);
 
         while (remainingTx > 0) {
             try {
                 const amount = await this.getAmount();
                 if (!amount) {
-                    Logger.error('Failed to get the amount. Skipping transaction...');
+                    Logger.error(`[ ${new Date().toLocaleTimeString()} ] Failed to get the amount. Skipping transaction...`);
                     continue;
                 }
 
@@ -39,20 +42,32 @@ export class TransactionManager {
                     value: randomValue,
                 };
 
+                Logger.info(`[ ${new Date().toLocaleTimeString()} ] Sending transaction from ${this.wallet.address}...`);
+
+                const txStartTime = new Date();
                 const result = await this.wallet.sendTransaction(transaction);
-                Logger.success(`Transaction successful from Arbitrum Sepolia to ${NetworkManager.getNetworkName(this.networkOption)} Sepolia!`);
-                Logger.info(`Transaction hash: https://sepolia-explorer.arbitrum.io/tx/${result.hash}`);
+                const txEndTime = new Date();
+
+                Logger.success(`[ ${txEndTime.toLocaleTimeString()} ] Transaction successful from Arbitrum Sepolia to ${NetworkManager.getNetworkName(this.networkOption)} Sepolia!`);
+                Logger.info(`[ ${txEndTime.toLocaleTimeString()} ] Transaction hash: https://sepolia-explorer.arbitrum.io/tx/${result.hash}`);
+                Logger.info(`[ ${txEndTime.toLocaleTimeString()} ] Transaction took ${txEndTime.getTime() - txStartTime.getTime()} ms`);
 
                 successfulTx++;
                 remainingTx--;
 
                 if (remainingTx > 0) {
-                    await new Promise(resolve => setTimeout(resolve, randomDelay));
+                    const delay = randomDelay;
+                    Logger.info(`[ ${new Date().toLocaleTimeString()} ] Waiting for ${delay} ms before next transaction...`);
+                    await new Promise(resolve => setTimeout(resolve, delay));
                 }
             } catch (error) {
-                Logger.error(`Error during transaction: ${error}`);
+                Logger.error(`[ ${new Date().toLocaleTimeString()} ] Error during transaction: ${error}`);
             }
         }
+
+        const endTime = new Date();
+        Logger.info(`[ ${endTime.toLocaleTimeString()} ] Completed processing transactions`);
+        Logger.info(`[ ${endTime.toLocaleTimeString()} ] Total time taken: ${endTime.getTime() - startTime.getTime()} ms`);
 
         return successfulTx;
     }
