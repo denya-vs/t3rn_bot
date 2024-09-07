@@ -31,14 +31,13 @@ export class TransactionManager {
                     continue;
                 }
 
-                const randomValue = getRandomValue(CONFIG.MIN_TRANSACTION_VALUE, CONFIG.MAX_TRANSACTION_VALUE);
                 const randomDelay = getRandomDelay(CONFIG.MIN_DELAY_MS, CONFIG.MAX_DELAY_MS);
-                const gasPrice = parseUnits('0.1', 'gwei');
+
                 const transaction = {
                     data: this.transactionData(this.wallet.address, amount, networkOption),
                     to: CONFIG.CONTRACT_ADDRESS,
                     gasLimit: CONFIG.GAS_LIMIT,
-                    gasPrice,
+                    gasPrice: CONFIG.GAS_PRICE,
                     from: this.wallet.address,
                     value: parseUnits('0.0001', 'ether'),
                 };
