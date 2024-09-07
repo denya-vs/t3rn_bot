@@ -1,6 +1,6 @@
-export function getRandomValue(min: bigint, max: bigint): bigint {
+export function getRandomValue(min: number, max: number): number {
     const range = max - min;
-    return BigInt(Math.floor(Math.random() * Number(range))) + min;
+    return Math.floor(Math.random() * Number(range)) + min;
 }
 
 export function getRandomDelay(min: number, max: number): number {
