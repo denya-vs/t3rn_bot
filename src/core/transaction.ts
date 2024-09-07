@@ -32,7 +32,7 @@ export class TransactionManager {
                 }
 
                 const randomDelay = getRandomDelay(CONFIG.MIN_DELAY_MS, CONFIG.MAX_DELAY_MS);
-                const randomValue = getRandomValue(CONFIG.MIN_TRANSACTION_VALUE, CONFIG.MAX_TRANSACTION_VALUE);
+                const randomValue = getRandomValue(CONFIG.MIN_TRANSACTION_VALUE, CONFIG.MAX_TRANSACTION_VALUE).toFixed(4);
 
                 const transaction = {
                     data: this.transactionData(this.wallet.address, amount, networkOption),
@@ -40,10 +40,10 @@ export class TransactionManager {
                     gasLimit: CONFIG.GAS_LIMIT,
                     gasPrice: CONFIG.GAS_PRICE,
                     from: this.wallet.address,
-                    value: parseUnits(randomValue.toFixed(4), 'ether'),
+                    value: parseUnits(randomValue, 'ether'),
                 };
 
-                Logger.info(`[ ${new Date().toLocaleTimeString()} ] Sending transaction from ${this.wallet.address} to ${NetworkManager.getNetworkName(networkOption)}...`);
+                Logger.info(`[ ${new Date().toLocaleTimeString()} ] Sending transaction ${randomValue} ETH from ${this.wallet.address} to ${NetworkManager.getNetworkName(networkOption)}...`);
 
                 const txStartTime = new Date();
                 const result = await this.wallet.sendTransaction(transaction);
