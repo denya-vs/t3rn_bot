@@ -14,7 +14,7 @@ export class TransactionManager {
         this.apiService = new ApiService();
     }
 
-    async executeTransaction(remainingTx: number): Promise<number> {
+    async executeTransaction(remainingTx: number, fromNetwork: NetworkOption): Promise<number> {
         let successfulTx = 0;
         const startTime = new Date();
 
@@ -22,10 +22,10 @@ export class TransactionManager {
 
         while (remainingTx > 0) {
             try {
-                // Выбор случайной сети перед каждой транзакцией
-                const networkOption = NetworkManager.getRandomNetwork();
+                // Выбор случайной сети для исходящей транзакции
+                const toNetworkOption = NetworkManager.getRandomNetwork();
 
-                const amount = await this.getAmount(networkOption);
+                const amount = await this.getAmount(fromNetwork, toNetworkOption);
                 if (!amount) {
                     Logger.error(`[ ${new Date().toLocaleTimeString()} ] Failed to get the amount. Skipping transaction...`);
                     continue;
@@ -35,15 +35,16 @@ export class TransactionManager {
                 const randomValue = getRandomValue(CONFIG.MIN_TRANSACTION_VALUE, CONFIG.MAX_TRANSACTION_VALUE).toFixed(4);
 
                 const transaction = {
-                    data: this.transactionData(this.wallet.address, amount, networkOption),
-                    to: CONFIG.CONTRACT_ADDRESS,
+                    data: this.transactionData(this.wallet.address, amount, toNetworkOption),
+                    to: CONFIG.CONTRACT_ADDRESS_ARB,  // Assuming Arbitrum as default contract address
                     gasLimit: CONFIG.GAS_LIMIT,
-                    gasPrice: CONFIG.GAS_PRICE,
+                    maxFeePerGas: CONFIG.GAS_PRICE,
+                    maxPriorityFeePerGas: CONFIG.GAS_PRICE,
                     from: this.wallet.address,
                     value: parseUnits(randomValue, 'ether'),
                 };
 
-                Logger.info(`[ ${new Date().toLocaleTimeString()} ] Sending transaction ${randomValue} ETH from ${this.wallet.address} to ${NetworkManager.getNetworkName(networkOption)}...`);
+                Logger.info(`[ ${new Date().toLocaleTimeString()} ] Sending transaction ${randomValue} ETH from ${NetworkManager.getNetworkName(fromNetwork)} to ${NetworkManager.getNetworkName(toNetworkOption)}...`);
 
                 const txStartTime = new Date();
                 const result = await this.wallet.sendTransaction(transaction);
@@ -53,13 +54,13 @@ export class TransactionManager {
                 const receipt = await this.wallet.provider?.waitForTransaction(result.hash);
                 if (receipt && receipt.status === 1) {
                     const txEndTime = new Date();
-                    Logger.success(`[ ${txEndTime.toLocaleTimeString()} ] Transaction confirmed successfully from Arbitrum Sepolia to ${NetworkManager.getNetworkName(networkOption)} Sepolia!`);
+                    Logger.success(`[ ${txEndTime.toLocaleTimeString()} ] Transaction confirmed successfully from ${NetworkManager.getNetworkName(fromNetwork)} to ${NetworkManager.getNetworkName(toNetworkOption)}!`);
                     Logger.info(`[ ${txEndTime.toLocaleTimeString()} ] Transaction hash: https://sepolia-explorer.arbitrum.io/tx/${result.hash}`);
                     Logger.info(`[ ${txEndTime.toLocaleTimeString()} ] Transaction took ${txEndTime.getTime() - txStartTime.getTime()} ms`);
 
                     successfulTx++;
                 } else {
-                    Logger.error(`[ ${new Date().toLocaleTimeString()} ] Transaction failed from Arbitrum Sepolia to ${NetworkManager.getNetworkName(networkOption)} Sepolia!: https://sepolia-explorer.arbitrum.io/tx/${result.hash}`);
+                    Logger.error(`[ ${new Date().toLocaleTimeString()} ] Transaction failed from ${NetworkManager.getNetworkName(fromNetwork)} to ${NetworkManager.getNetworkName(toNetworkOption)}!: https://sepolia-explorer.arbitrum.io/tx/${result.hash}`);
                 }
                 console.log('');
 
@@ -83,8 +84,8 @@ export class TransactionManager {
         return successfulTx;
     }
 
-    private async getAmount(networkOption: NetworkOption): Promise<string | null> {
-        return this.apiService.getAmount(networkOption);
+    private async getAmount(fromNetwork: NetworkOption, toNetwork: NetworkOption): Promise<string | null> {
+        return this.apiService.getAmount(fromNetwork, toNetwork);
     }
 
     private transactionData(address: string, amount: string, network: NetworkOption): string {
@@ -93,6 +94,6 @@ export class TransactionManager {
                 network === NetworkOption.Optimism ? '0x56591d596f707370' :
                     '0x0000000000000000';
 
-        return `${chainPrefix}000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000${address.slice(2)}0000000000000000000000000000000000000000000000000000${amount.slice(2)}0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000005af3107a4000`;
+        return `${chainPrefix}000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000${address.slice(2)}00000000000000000000000000000000000000000000000000${amount.slice(2)}00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002386f26fc10000`;
     }
 }

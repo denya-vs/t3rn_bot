@@ -6,7 +6,7 @@ export class WalletProvider {
     private readonly provider: JsonRpcProvider;
 
     constructor() {
-        this.provider = new JsonRpcProvider(CONFIG.RPC_URL);
+        this.provider = new JsonRpcProvider(CONFIG.RPC_URL_ARB);
     }
 
     createWallet(privateKey: string): Wallet {

@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { CONFIG } from '../config/config';
-import { NetworkOption } from '../core/network';
+import { NetworkOption, NetworkManager } from '../core/network';
 
 export class ApiService {
     private readonly apiUrl: string;
@@ -9,16 +9,11 @@ export class ApiService {
         this.apiUrl = CONFIG.API_URL;
     }
 
-    async getAmount(network: NetworkOption): Promise<string | null> {
-        const networkMapping: { [key in NetworkOption]: string } = {
-            [NetworkOption.Base]: 'bssp',
-            [NetworkOption.Blast]: 'blss',
-            [NetworkOption.Optimism]: 'opsp',
-        };
+    async getAmount(fromNetwork: NetworkOption, toNetwork: NetworkOption): Promise<string | null> {
+        const fromChain = NetworkManager.getNetworkApiName(fromNetwork);
+        const toChain = NetworkManager.getNetworkApiName(toNetwork);
 
-        const toChain = networkMapping[network];
-
-        if (!toChain) {
+        if (!fromChain || !toChain) {
             console.error('Invalid network option');
             return null;
         }
@@ -27,9 +22,9 @@ export class ApiService {
             const { data } = await axios.post(this.apiUrl, {
                 fromAsset: 'eth',
                 toAsset: 'eth',
-                fromChain: 'arbt',
+                fromChain: fromChain,
                 toChain: toChain,
-                amountWei: '100000000000000',
+                amountWei: '10000000000000000',
                 executorTipUSD: 0,
                 overpayOptionPercentage: 0,
                 spreadOptionPercentage: 0,

@@ -4,6 +4,7 @@ import { Logger } from './utils/logger';
 import { displayHeader } from './utils/display';
 import * as fs from 'fs';
 import * as readline from 'readline';
+import { NetworkManager } from './core/network';
 
 const rl = readline.createInterface({
     input: process.stdin,
@@ -20,6 +21,7 @@ function askQuestion(query: string): Promise<string> {
     const privateKeys = JSON.parse(fs.readFileSync('privateKeys.json', 'utf-8'));
     const walletProvider = new WalletProvider();
 
+    // Запрос количества транзакций
     const numTxInput = await askQuestion('Enter the number of transactions to process: ');
     const numTx = parseInt(numTxInput, 10);
 
@@ -29,7 +31,17 @@ function askQuestion(query: string): Promise<string> {
         return;
     }
 
-    Logger.info(`Processing ${numTx} transactions for each wallet...`);
+    // Запрос исходной сети
+    const fromNetworkInput = await askQuestion('Enter the source network (Base, Blast, Optimism, Arbitrum): ');
+    const fromNetwork = NetworkManager.getNetworkOptionByName(fromNetworkInput.trim());
+
+    if (!fromNetwork) {
+        Logger.error('Invalid network option. Exiting...');
+        rl.close();
+        return;
+    }
+
+    Logger.info(`Processing ${numTx} transactions for each wallet on network ${NetworkManager.getNetworkName(fromNetwork)}...`);
 
     for (const privateKey of privateKeys) {
         const wallet = walletProvider.createWallet(privateKey);
@@ -44,7 +56,7 @@ function askQuestion(query: string): Promise<string> {
         }
 
         const transactionManager = new TransactionManager(wallet);
-        const successfulTx = await transactionManager.executeTransaction(numTx);
+        const successfulTx = await transactionManager.executeTransaction(numTx, fromNetwork);
 
         Logger.success(`Successfully processed ${successfulTx} transactions for wallet ${wallet.address}`);
     }
