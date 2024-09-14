@@ -19,7 +19,6 @@ function askQuestion(query: string): Promise<string> {
     displayHeader();
 
     const privateKeys = JSON.parse(fs.readFileSync('privateKeys.json', 'utf-8'));
-    const walletProvider = new WalletProvider();
 
     // Запрос количества транзакций
     const numTxInput = await askQuestion('Enter the number of transactions to process: ');
@@ -42,6 +41,8 @@ function askQuestion(query: string): Promise<string> {
     }
 
     Logger.info(`Processing ${numTx} transactions for each wallet on network ${NetworkManager.getNetworkName(fromNetwork)}...`);
+
+    const walletProvider = new WalletProvider(fromNetwork);  // Создаем WalletProvider с правильной сетью
 
     for (const privateKey of privateKeys) {
         const wallet = walletProvider.createWallet(privateKey);

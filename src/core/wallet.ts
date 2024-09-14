@@ -1,12 +1,12 @@
 import { Wallet, JsonRpcProvider, formatUnits } from 'ethers';
-import { CONFIG } from '../config/config';
-
+import { NetworkOption, NetworkManager } from './network';
 
 export class WalletProvider {
     private readonly provider: JsonRpcProvider;
 
-    constructor() {
-        this.provider = new JsonRpcProvider(CONFIG.RPC_URL_ARB);
+    constructor(network: NetworkOption) {
+        const rpcUrl = NetworkManager.getRpcUrl(network);
+        this.provider = new JsonRpcProvider(rpcUrl);
     }
 
     createWallet(privateKey: string): Wallet {

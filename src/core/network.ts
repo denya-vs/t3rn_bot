@@ -1,3 +1,4 @@
+import { CONFIG } from '../config/config';
 export enum NetworkOption {
     Base = 'Base',
     Blast = 'Blast',
@@ -6,30 +7,32 @@ export enum NetworkOption {
 }
 
 export class NetworkManager {
-    // Маппинг сетей на идентификаторы для API
-    private static networkMapping: { [key in NetworkOption]: { apiName: string, explorerUrl: string } } = {
-        [NetworkOption.Base]: { apiName: 'bssp', explorerUrl: 'https://base-explorer.com' },
-        [NetworkOption.Blast]: { apiName: 'blss', explorerUrl: 'https://blast-explorer.com' },
-        [NetworkOption.Optimism]: { apiName: 'opsp', explorerUrl: 'https://optimism-explorer.com' },
-        [NetworkOption.Arbitrum]: { apiName: 'arbt', explorerUrl: 'https://arbitrum-explorer.com' }  // Добавляем Arbitrum в маппинг
+    // Маппинг сетей на идентификаторы для API и адреса контрактов
+    private static networkMapping: { [key in NetworkOption]: { apiName: string, explorerUrl: string, contractAddress?: string, rpcUrl: string } } = {
+        [NetworkOption.Base]: { apiName: 'bssp', explorerUrl: 'https://base-explorer.com', rpcUrl: CONFIG.RPC_URL_BASE },
+        [NetworkOption.Blast]: { apiName: 'blss', explorerUrl: 'https://blast-explorer.com', rpcUrl: CONFIG.RPC_URL_BLAST },
+        [NetworkOption.Optimism]: { apiName: 'opsp', explorerUrl: 'https://optimism-sepolia.blockscout.com', contractAddress: CONFIG.CONTRACT_ADDRESS_OP, rpcUrl: CONFIG.RPC_URL_OP },
+        [NetworkOption.Arbitrum]: { apiName: 'arbt', explorerUrl: 'https://sepolia-explorer.arbitrum.io', contractAddress: CONFIG.CONTRACT_ADDRESS_ARB, rpcUrl: CONFIG.RPC_URL_ARB }
     };
+
+    // Получение адреса контракта для сети, если он есть
+    static getContractAddress(option: NetworkOption): string | null {
+        return this.networkMapping[option].contractAddress || null;
+    }
 
     static getRandomNetwork(): NetworkOption {
         const networks = Object.values(NetworkOption);
         return networks[Math.floor(Math.random() * networks.length)];
     }
 
-    // Получение имени сети для отображения
     static getNetworkName(option: NetworkOption): string {
         return option;
     }
 
-    // Получение имени сети для использования в API (например, bssp, blss)
     static getNetworkApiName(option: NetworkOption): string {
         return this.networkMapping[option].apiName;
     }
 
-    // Опционально: получение URL для explorer, если нужно
     static getExplorerUrl(option: NetworkOption): string {
         return this.networkMapping[option].explorerUrl;
     }
@@ -38,5 +41,9 @@ export class NetworkManager {
         const normalizedName = name.trim().toLowerCase();
         const network = Object.values(NetworkOption).find(option => option.toLowerCase() === normalizedName);
         return network || null;
+    }
+
+    static getRpcUrl(network: NetworkOption): string {
+        return this.networkMapping[network].rpcUrl;
     }
 }

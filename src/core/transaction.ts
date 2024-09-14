@@ -23,7 +23,13 @@ export class TransactionManager {
         while (remainingTx > 0) {
             try {
                 // Выбор случайной сети для исходящей транзакции
-                const toNetworkOption = NetworkManager.getRandomNetwork();
+                let toNetworkOption = NetworkManager.getRandomNetwork();
+
+                // Проверка на совпадение сетей
+                while (toNetworkOption === fromNetwork) {
+                    Logger.info(`[ ${new Date().toLocaleTimeString()} ] Skipping transaction, as both networks are ${NetworkManager.getNetworkName(fromNetwork)}`);
+                    toNetworkOption = NetworkManager.getRandomNetwork();
+                }
 
                 const amount = await this.getAmount(fromNetwork, toNetworkOption);
                 if (!amount) {
@@ -34,9 +40,11 @@ export class TransactionManager {
                 const randomDelay = getRandomDelay(CONFIG.MIN_DELAY_MS, CONFIG.MAX_DELAY_MS);
                 const randomValue = getRandomValue(CONFIG.MIN_TRANSACTION_VALUE, CONFIG.MAX_TRANSACTION_VALUE).toFixed(4);
 
+                const contractAddress = NetworkManager.getContractAddress(fromNetwork);  // Получаем адрес контракта из NetworkManager
+
                 const transaction = {
                     data: this.transactionData(this.wallet.address, amount, toNetworkOption),
-                    to: CONFIG.CONTRACT_ADDRESS_ARB,  // Assuming Arbitrum as default contract address
+                    to: contractAddress,
                     gasLimit: CONFIG.GAS_LIMIT,
                     maxFeePerGas: CONFIG.GAS_PRICE,
                     maxPriorityFeePerGas: CONFIG.GAS_PRICE,
@@ -55,12 +63,12 @@ export class TransactionManager {
                 if (receipt && receipt.status === 1) {
                     const txEndTime = new Date();
                     Logger.success(`[ ${txEndTime.toLocaleTimeString()} ] Transaction confirmed successfully from ${NetworkManager.getNetworkName(fromNetwork)} to ${NetworkManager.getNetworkName(toNetworkOption)}!`);
-                    Logger.info(`[ ${txEndTime.toLocaleTimeString()} ] Transaction hash: https://sepolia-explorer.arbitrum.io/tx/${result.hash}`);
+                    Logger.info(`[ ${txEndTime.toLocaleTimeString()} ] Transaction hash: ${NetworkManager.getExplorerUrl(fromNetwork)}/tx/${result.hash}`);
                     Logger.info(`[ ${txEndTime.toLocaleTimeString()} ] Transaction took ${txEndTime.getTime() - txStartTime.getTime()} ms`);
 
                     successfulTx++;
                 } else {
-                    Logger.error(`[ ${new Date().toLocaleTimeString()} ] Transaction failed from ${NetworkManager.getNetworkName(fromNetwork)} to ${NetworkManager.getNetworkName(toNetworkOption)}!: https://sepolia-explorer.arbitrum.io/tx/${result.hash}`);
+                    Logger.error(`[ ${new Date().toLocaleTimeString()} ] Transaction failed from ${NetworkManager.getNetworkName(fromNetwork)} to ${NetworkManager.getNetworkName(toNetworkOption)}!: ${NetworkManager.getExplorerUrl(fromNetwork)}/tx/${result.hash}`);
                 }
                 console.log('');
 
